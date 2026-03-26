@@ -1,0 +1,33 @@
+services:
+  ingesta-datos:
+    image: ingesta-datos
+    build: .  
+    depends_on:
+      data-warehouse:
+        condition: service_healthy
+  data-warehouse:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=warehouse
+    volumes: 
+      - warehouse-volume:/var/lib/postgressql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d warehouse"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+
+  warehouse-ui:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=dsimbatb0103@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD= root
+    ports:
+      - "9000:80"
+volumes:
+  warehouse-volume:
